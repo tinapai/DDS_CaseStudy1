@@ -1,0 +1,28 @@
+#case study 1
+
+
+```{r}
+library(tidyverse)
+```
+
+```{r}
+beers = read.csv("Beers.csv")
+breweries = read.csv("Breweries.csv")
+head(beers)
+head(breweries)
+```
+
+
+#question 1: how many breweries are present in each state?
+
+```{r}
+state_breweries <- breweries %>%
+  group_by(State) %>%
+  tally()
+head(state_breweries)
+state_breweries %>%
+  ggplot(aes(x=State, y=n)) +
+  geom_bar(stat = "identity")
+```
+
+
