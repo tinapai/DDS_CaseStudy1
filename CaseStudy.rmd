@@ -25,4 +25,76 @@ state_breweries %>%
   geom_bar(stat = "identity")
 ```
 
+#question 2: merge data
+
+```{r}
+head(breweries)
+head(beers)
+beer_breweries = breweries %>%
+  left_join(beers, by = c("Brew_ID" = "Brewery_id"))
+head(beer_breweries)
+```
+
+
+#question 3: fix nas
+```{r}
+beer_breweries <- drop_na(beer_breweries)
+```
+
+
+#question 4: Compute the median alcohol content and international bitterness unit for each state. Plot a bar chart to compare.
+```{r}
+#median abv by state
+state_abv = beer_breweries %>%
+  group_by(State) %>%
+  summarise(median = median(ABV, na.rm = TRUE))
+head(state_abv)
+state_abv %>%
+  ggplot(aes(x=State, y=median)) +
+  geom_bar(stat = "identity") +
+  ggtitle("Median ABV by State")
+
+#median ibu by state
+state_ibu = beer_breweries %>%
+  group_by(State) %>%
+  summarise(median = median(IBU, na.rm = TRUE))
+head(state_ibu)
+state_ibu %>%
+  ggplot(aes(x=State, y=median)) +
+  geom_bar(stat = "identity") +
+  ggtitle("Median IBU by State")
+```
+
+
+
+#question 5: Which state has the maximum alcoholic (ABV) beer? Which state has the most bitter (IBU) beer?
+
+```{r}
+#KY has the beer with the highest ABV
+top_ABV <- beer_breweries %>% 
+  arrange(desc(IBU)) %>%
+  top_n(10, ABV)
+top_ABV
+
+#OR has the beer with the highest IBU
+top_IBU <- beer_breweries %>%
+  arrange(desc(IBU)) %>%
+  top_n(10, IBU)
+top_IBU
+
+```
+
+
+#question 6: Comment on the summary statistics and distribution of the ABV variable.
+The ABV ranges from .027 to .125, with a median of .057 and mean of .0599. The distribution looks somewhat right skewed.
+
+```{r}
+summary(beer_breweries$ABV)
+beer_breweries %>%
+  ggplot(aes(x=ABV)) +
+  geom_histogram() +
+  ggtitle("Histogram of ABV")
+```
+
+
 
