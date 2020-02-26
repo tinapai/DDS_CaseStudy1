@@ -1,0 +1,59 @@
+#case study 1
+
+
+```{r}
+library(tidyverse)
+library(mice)
+library(ggplot2)
+library(stringr)
+```
+
+```{r}
+beers = read.csv("Beers.csv")
+breweries = read.csv("Breweries.csv")
+head(beers)
+head(breweries)
+```
+
+
+#question 1: how many breweries are present in each state?
+
+```{r}
+state_breweries <- breweries %>%
+  group_by(State) %>%
+  tally()
+head(state_breweries)
+state_breweries %>%
+  ggplot(aes(x=State, y=n)) +
+  geom_bar(stat = "identity")
+```
+
+#Merging Beer and Breweries data
+```{r}
+breweries1 <- merge(beers,breweries,by.x="Beer_ID",by.y="Brew_ID")
+head(breweries1,6)
+tail(breweries1,6)
+```
+#Missing Values
+```{r}
+
+colSums(is.na(breweries1))
+
+#breweries_complete <- mice(breweries1,m=5,meth = "norm.predict")
+breweries1$ABV[is.na(breweries1$ABV)] <- mean(breweries1$ABV, na.rm = TRUE)
+breweries1$IBU[is.na(breweries1$IBU)] <- mean(breweries1$IBU, na.rm = TRUE)
+
+colSums(is.na(breweries1))
+```
+#Scatterplot of IBU Vs. ABV
+```{r}
+breweries1 %>% ggplot(aes(x=ABV,y=IBU)) + geom_point()+geom_smooth(method=lm) + labs(x = "Alcohol By Volume (ABV)",y = "International Bitternes Unit (IBU)", title = "Relationship Between ABV and IBU")
+
+# Judging by the scatterplot and the regression line there seems to be a positive correlation between ABV and IBU.  So that means there is a positive relationship betwen ABV and IBU so as ABV increases, so does IBU. 
+```
+#Knn
+
+```{r}
+
+```
+
