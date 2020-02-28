@@ -18,11 +18,16 @@ head(breweries)
 ```{r}
 state_breweries <- breweries %>%
   group_by(State) %>%
-  tally()
+  tally() %>%
+  arrange(desc(n))
 head(state_breweries)
+tail(state_breweries)
 state_breweries %>%
-  ggplot(aes(x=State, y=n)) +
-  geom_bar(stat = "identity")
+  ggplot(aes(x=reorder(State, -n), y=n)) +
+  geom_bar(stat = "identity") +
+  ggtitle("Number of Breweries by State") +
+  xlab("State") +
+  ylab("Number of Breweries")
 ```
 
 #question 2: merge data
@@ -50,9 +55,12 @@ state_abv = beer_breweries %>%
   summarise(median = median(ABV, na.rm = TRUE))
 head(state_abv)
 state_abv %>%
-  ggplot(aes(x=State, y=median)) +
+  ggplot(aes(x=reorder(State, -median), y=median)) +
   geom_bar(stat = "identity") +
-  ggtitle("Median ABV by State")
+  ggtitle("Median ABV by State") +
+  ggtitle("Median ABV by State") +
+  xlab("State") +
+  ylab("Median ABV")
 
 #median ibu by state
 state_ibu = beer_breweries %>%
@@ -60,9 +68,12 @@ state_ibu = beer_breweries %>%
   summarise(median = median(IBU, na.rm = TRUE))
 head(state_ibu)
 state_ibu %>%
-  ggplot(aes(x=State, y=median)) +
+  ggplot(aes(x=reorder(State, -median), y=median)) +
   geom_bar(stat = "identity") +
-  ggtitle("Median IBU by State")
+  ggtitle("Median IBU by State") +
+  ggtitle("Median ABV by State") +
+  xlab("State") +
+  ylab("Median IBU")
 ```
 
 
@@ -97,4 +108,11 @@ beer_breweries %>%
 ```
 
 
+#question 8: IPA vs Other Ale
+```{r}
+summary(beer_breweries$Name.y)
 
+
+```
+
+#question 9: freeform EDA--most common word used in beer names?
