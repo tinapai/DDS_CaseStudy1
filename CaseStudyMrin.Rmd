@@ -6,6 +6,8 @@ library(tidyverse)
 library(mice)
 library(ggplot2)
 library(stringr)
+library(class)
+library(caret)
 ```
 
 ```{r}
@@ -51,7 +53,7 @@ breweries1 %>% ggplot(aes(x=ABV,y=IBU)) + geom_point()+geom_smooth(method=lm) + 
 
 # Judging by the scatterplot and the regression line there seems to be a positive correlation between ABV and IBU.  So that means there is a positive relationship betwen ABV and IBU so as ABV increases, so does IBU. 
 ```
-#Knn
+#Knn Part 1: Configuring the data to identify which Style is IPA or Ale
 
 ```{r}
 breweriesKnn <- breweries1
@@ -109,9 +111,30 @@ for (d in 1: nlevels(breweriesKnn$Style))
 }
 ```
 
-
+#Knn Part 2: Using Knn model to predict Style of Beer
 ```{r}
 breweriesKnn<-breweriesKnn %>% filter(Style=="IPA"|Style=="Ale")%>% droplevels()
+set.seed(6)
+splitPerc = .7
+trainIndices = sample(1:dim(breweriesKnn)[1],round(splitPerc * dim(breweriesKnn)[1]))
+train = breweriesKnn[trainIndices,]
+test = breweriesKnn[-trainIndices,]
+accs = data.frame(accuracy = numeric(100), k = numeric(100))
+
+for(i in 1:100)
+{
+styles = knn.cv(breweriesKnn[,c(3,4)],breweriesKnn$Style, prob = TRUE, k = i)
+  table(breweriesKnn$Style,styles)
+  CM = confusionMatrix(table(breweriesKnn$Style,styles))
+  accs$accuracy[i] = CM$overall[1]
+  accs$k[i] = i
+}
+
+plot(accs$k,accs$accuracy, type = "l", xlab = "k")
+accu = accs$accuracy
+max(accu)
+
+
 
 ```
 
