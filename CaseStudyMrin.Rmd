@@ -8,6 +8,7 @@ library(ggplot2)
 library(stringr)
 library(class)
 library(caret)
+library(ggthemes)
 ```
 
 ```{r}
@@ -32,7 +33,8 @@ state_breweries %>%
 
 #Merging Beer and Breweries data
 ```{r}
-breweries1 <- merge(beers,breweries,by.x="Beer_ID",by.y="Brew_ID")
+breweries1 <- breweries %>%
+  left_join(beers, by = c("Brew_ID" = "Brewery_id"))
 head(breweries1,6)
 tail(breweries1,6)
 ```
@@ -40,6 +42,8 @@ tail(breweries1,6)
 ```{r}
 
 colSums(is.na(breweries1))
+sum(is.na(breweries1$ABV))/2410
+sum(is.na(breweries1$IBU))/2410
 
 #breweries_complete <- mice(breweries1,m=5,meth = "norm.predict")
 breweries1$ABV[is.na(breweries1$ABV)] <- mean(breweries1$ABV, na.rm = TRUE)
@@ -49,7 +53,7 @@ colSums(is.na(breweries1))
 ```
 #Scatterplot of IBU Vs. ABV
 ```{r}
-breweries1 %>% ggplot(aes(x=ABV,y=IBU)) + geom_point()+geom_smooth(method=lm) + labs(x = "Alcohol By Volume (ABV)",y = "International Bitternes Unit (IBU)", title = "Relationship Between ABV and IBU")
+breweries1 %>% ggplot(aes(x=ABV,y=IBU)) + theme_fivethirtyeight() + geom_point()+geom_smooth(method=lm) + labs(x = "Alcohol By Volume (ABV)",y = "International Bitterness Unit (IBU)", title = "Relationship Between ABV and IBU")
 
 # Judging by the scatterplot and the regression line there seems to be a positive correlation between ABV and IBU.  So that means there is a positive relationship betwen ABV and IBU so as ABV increases, so does IBU. 
 ```
@@ -123,7 +127,7 @@ accs = data.frame(accuracy = numeric(100), k = numeric(100))
 
 for(i in 1:100)
 {
-styles = knn.cv(breweriesKnn[,c(3,4)],breweriesKnn$Style, prob = TRUE, k = i)
+styles = knn.cv(breweriesKnn[,c(6,7)],breweriesKnn$Style, prob = TRUE, k = i)
   table(breweriesKnn$Style,styles)
   CM = confusionMatrix(table(breweriesKnn$Style,styles))
   accs$accuracy[i] = CM$overall[1]
@@ -136,6 +140,34 @@ max(accu)
 
 
 
+```
+
+
+```{r}
+iterations = 500
+numks = 100
+
+masterAcc = matrix(nrow = iterations, ncol = numks)
+
+for(j in 1:iterations)
+{
+accs = data.frame(accuracy = numeric(100), k = numeric(100))
+trainIndices = sample(1:dim(breweriesKnn)[1],round(splitPerc * dim(breweriesKnn)[1]))
+train = breweriesKnn[trainIndices,]
+test = breweriesKnn[-trainIndices,]
+for(i in 1:numks)
+{
+  styles = knn(train[,c(6,7)],test[,c(6,7)],train$Style, prob = TRUE, k = i)
+  table(styles,test$Styles)
+  CM = confusionMatrix(table(styles,test$Styles))
+  masterAcc[j,i] = CM$overall[1]
+}
+
+}
+
+MeanAcc = colMeans(masterAcc)
+
+plot(seq(1,numks,1),MeanAcc, type = "l")
 ```
 
 
