@@ -37,13 +37,23 @@ head(breweries)
 head(beers)
 beer_breweries = breweries %>%
   left_join(beers, by = c("Brew_ID" = "Brewery_id"))
+names(beer_breweries) <- c("Brew_ID","Brewery Name","City","State","Beer Name", "Beer_ID","ABV","IBU","Style","Ounces")
 head(beer_breweries)
 ```
 
 
 #question 3: fix nas
 ```{r}
-beer_breweries <- drop_na(beer_breweries)
+
+n = colSums(is.na(beer_breweries))
+n
+mean(beer_breweries$ABV, na.rm = TRUE)
+mean(beer_breweries$IBU, na.rm = TRUE)
+
+beer_breweries$ABV[is.na(beer_breweries$ABV)] <- mean(beer_breweries$ABV, na.rm = TRUE)
+beer_breweries$IBU[is.na(beer_breweries$IBU)] <- mean(beer_breweries$IBU, na.rm = TRUE)
+
+colSums(is.na(beer_breweries))
 ```
 
 
@@ -83,15 +93,15 @@ state_ibu %>%
 ```{r}
 #KY has the beer with the highest ABV
 top_ABV <- beer_breweries %>% 
-  arrange(desc(IBU)) %>%
+  arrange(desc(ABV)) %>%
   top_n(10, ABV)
-top_ABV
+head(top_ABV[c("State", "Brewery Name", "Beer Name", "ABV")])
 
 #OR has the beer with the highest IBU
 top_IBU <- beer_breweries %>%
   arrange(desc(IBU)) %>%
   top_n(10, IBU)
-top_IBU
+head(top_IBU[c("State", "Brewery Name", "Beer Name", "IBU")])
 
 ```
 
