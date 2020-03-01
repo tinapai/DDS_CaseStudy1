@@ -9,6 +9,9 @@ library(stringr)
 library(class)
 library(caret)
 library(ggthemes)
+library(VIM)
+library(lattice)
+library(DMwR)
 ```
 
 ```{r}
@@ -41,26 +44,24 @@ tail(breweries1,6)
 #Missing Values
 ```{r}
 
-colSums(is.na(breweries1))
-sum(is.na(breweries1$ABV))/2410
-sum(is.na(breweries1$IBU))/2410
+#plot the NAs
+breweries1_miss = aggr(breweries1, col=mdc(1:2), numbers=TRUE, sortVars=TRUE, labels=names(breweries1), cex.axis=.7, gap=3, ylab=c("Proportion of NAs","NA Pattern"))
 
-#breweries_complete <- mice(breweries1,m=5,meth = "norm.predict")
-breweries1$ABV[is.na(breweries1$ABV)] <- mean(breweries1$ABV, na.rm = TRUE)
-breweries1$IBU[is.na(breweries1$IBU)] <- mean(breweries1$IBU, na.rm = TRUE)
+breweries1_impute <- knnImputation(breweries1)
 
-colSums(is.na(breweries1))
 ```
 #Scatterplot of IBU Vs. ABV
 ```{r}
-breweries1 %>% ggplot(aes(x=ABV,y=IBU)) + theme_fivethirtyeight() + geom_point()+geom_smooth(method=lm) + labs(x = "Alcohol By Volume (ABV)",y = "International Bitterness Unit (IBU)", title = "Relationship Between ABV and IBU")
+breweries1_impute %>% ggplot(aes(x=ABV,y=IBU)) + theme_fivethirtyeight() + geom_point()+geom_smooth(method=lm) + labs(x = "Alcohol By Volume (ABV)",y = "International Bitterness Unit (IBU)", title = "Relationship Between ABV and IBU")
+
+cor(breweries1_impute$ABV,breweries1_impute$IBU)
 
 # Judging by the scatterplot and the regression line there seems to be a positive correlation between ABV and IBU.  So that means there is a positive relationship betwen ABV and IBU so as ABV increases, so does IBU. 
 ```
 #Knn Part 1: Configuring the data to identify which Style is IPA or Ale
 
 ```{r}
-breweriesKnn <- breweries1
+breweriesKnn <- breweries1_impute
 for (i in 1: nlevels(breweriesKnn$Style))
 {
   if (grepl("IPA",levels(breweriesKnn$Style)[i]) == TRUE)
