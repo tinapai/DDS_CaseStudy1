@@ -9,6 +9,7 @@ library(DMwR)
 library(mice)
 library(ggplot2)
 library(ggthemes)
+library(stringr)
 ```
 
 ```{r}
@@ -20,6 +21,8 @@ head(breweries)
 
 
 #question 1: how many breweries are present in each state?
+
+There are ranging from 1 to 47 breweries in the states of the US. The state with the most breweries is CO (with 47 breweries) and the states with the fewest are NV, DC, ND, and SD (with 1 brewery).
 
 ```{r}
 state_breweries <- breweries %>%
@@ -43,7 +46,7 @@ head(breweries)
 head(beers)
 beer_breweries = breweries %>%
   left_join(beers, by = c("Brew_ID" = "Brewery_id"))
-names(beer_breweries) <- c("Brew_ID","Brewery Name","City","State","Beer Name", "Beer_ID","ABV","IBU","Style","Ounces")
+names(beer_breweries) <- c("Brew_ID","Brewery_Name","City","State","Beer_Name", "Beer_ID","ABV","IBU","Style","Ounces")
 head(beer_breweries)
 ```
 
@@ -60,6 +63,10 @@ beer_breweries <- beer_breweries_impute
 
 
 #question 4: Compute the median alcohol content and international bitterness unit for each state. Plot a bar chart to compare.
+
+Median alcohol content by state ranged from .04 ABV in UT to just over .06 ABV in DC. Below shows graphs of the median ABV by state.
+
+Median bitterness by state ranged from about 20 IBU in KS to just under 60 IBU in WV. Below shows graphs of the median IBU by state.
 ```{r}
 #median abv by state
 state_abv = beer_breweries %>%
@@ -90,18 +97,22 @@ state_ibu %>%
 
 #question 5: Which state has the maximum alcoholic (ABV) beer? Which state has the most bitter (IBU) beer?
 
+The beer with most alcoholic content is the Lee Hill Quadruple Ale from Upslope Brewing Company in Colorado, at .128 ABV.
+
+The beer with the most bitterness is Bitter Bitch Imperial IPA from Astoria Brewing Company in Oregon, at 138 IBU.
+
 ```{r}
 #CO has the beer with the highest ABV
 top_ABV <- beer_breweries %>% 
   arrange(desc(ABV)) %>%
   top_n(10, ABV)
-head(top_ABV[c("State", "Brewery Name", "Beer Name", "ABV")])
+head(top_ABV[c("State", "Brewery_Name", "Beer_Name", "ABV")])
 
 #OR has the beer with the highest IBU
 top_IBU <- beer_breweries %>%
   arrange(desc(IBU)) %>%
   top_n(10, IBU)
-head(top_IBU[c("State", "Brewery Name", "Beer Name", "IBU")])
+head(top_IBU[c("State", "Brewery_Name", "Beer_Name", "IBU")])
 
 ```
 
@@ -118,17 +129,60 @@ beer_breweries %>%
 ```
 
 
-#question 7: Is there an apparent relationship between the bitterness of the beer and its alcoholic content?
+#question 7: Is there a relationship between the bitterness of the beer and its alcoholic content?
+
+There seems to be a positive correlation between ABV and IBU. So that means there is a positive relationship betwen ABV and IBU so as ABV increases, so does IBU.
+
 ```{r}
 beer_breweries %>% ggplot(aes(x=ABV,y=IBU)) + theme_fivethirtyeight() + geom_point()+geom_smooth(method=lm) +
   xlab("Alcohol By Volume (ABV)") +
-  ylab("International Bitterness Unit (IBU)") + ggtitle( "Relationship Between ABV and IBU")
+  ylab("International Bitterness Unit (IBU)") + 
+  ggtitle( "Relationship Between ABV and IBU")
 
 cor(beer_breweries$ABV,beer_breweries$IBU)
 
-# Judging by the scatterplot and the regression line there seems to be a positive correlation between ABV and IBU.  So that means there is a positive relationship betwen ABV and IBU so as ABV increases, so does IBU.
-
-
 ```
 
-#question 9: freeform EDA--most common word used in beer names?
+#question 8: IPA vs Ale
+
+```{r}
+
+summary(as.factor(beer_breweries$Style))
+
+beer_breweries$Style <- as.character(beer_breweries$Style)
+beer_breweries$is_ale <- str_detect(beer_breweries$Style, "\\bAle\\b")
+summary(beer_breweries$is_ale)
+beer_breweries %>%
+  filter(is_ale) %>%
+  select(Style) %>%
+  count(Style)
+
+beer_breweries$is_IPA <- str_detect(beer_breweries$Style, "\\bIPA\\b")
+summary(beer_breweries$is_IPA)
+beer_breweries %>%
+  filter(is_IPA) %>%
+  select(Style) %>%
+  count(Style)
+  
+beer_breweries
+```
+
+#question 9: freeform EDA--most common word used in Beer_Names?
+
+An interesting fact: in beer names, the most common words after the types of beers themselves are colors (red, blonde, brown), then "Wheat", "Porter", and "Summer".
+
+```{r}
+head(beer_breweries$Beer_Name)
+beer_breweries = beer_breweries %>%
+  distinct(Beer_Name)
+Beer_Words = str_c(beer_breweries$Beer_Name, collapse = " ")
+Beer_Words
+Beer_words_distinct = str_match_all(Beer_Words, "(\\b\\w+\\b)")
+head(Beer_words_distinct, 15)
+Beer_words_df = data.frame(Beer_words_distinct)
+Beer_words_df %>%
+  count(X1) %>%
+  arrange(desc(n))
+  
+```
+
