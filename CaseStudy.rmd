@@ -263,6 +263,9 @@ MeanAcc = colMeans(masterAcc)
 
 #Plot the average accuracy of K
 plot(seq(1,numks,1),MeanAcc, type = "l",xlab = "k",ylab = "Mean Accuracy")
+
+#Find the maximum average accuracy
+max(MeanAcc)
 ```
 
 
