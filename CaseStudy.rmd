@@ -271,15 +271,21 @@ plot(seq(1,numks,1),MeanAcc, type = "l",xlab = "k",ylab = "Mean Accuracy")
 An interesting fact: in beer names, the most common words after the types of beers themselves are colors (red, blonde, brown), then "Wheat", "Porter", and "Summer".
 
 ```{r}
-
+#Look at beer names and remove duplicates
 head(beer_breweries$Beer_Name)
 beer_breweries = beer_breweries %>%
   distinct(Beer_Name)
+
+#put all the names into one big long string of words
 Beer_Words = str_c(beer_breweries$Beer_Name, collapse = " ")
 Beer_Words
+
+#parse the individual words out into a data frame
 Beer_words_distinct = str_match_all(Beer_Words, "(\\b\\w+\\b)")
 head(Beer_words_distinct, 15)
 Beer_words_df = data.frame(Beer_words_distinct)
+
+#tally the count of each word
 Beer_words_df %>%
   count(X1) %>%
   arrange(desc(n))
